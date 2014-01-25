@@ -36,6 +36,8 @@ public class MainActivity extends Activity {
 	ImageArrayAdapter imageAdapter;
 	
 	private final int REQUEST_CODE = 1;
+	private boolean firstRun = true;
+	private int queryCount = 0;
 	
 	int startingPoint = 0;
 	
@@ -91,7 +93,10 @@ public class MainActivity extends Activity {
       // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
       // Deserialize API response and then construct new objects to append to the adapter
     	
-    	Log.d("DEBUG", "<custom load more data - offset: >" + offset);
+    	Log.d("DEBUG", "<custom load more data - offset: >" + offset + " ;; firstRun: " + firstRun);
+    	
+    	fireQuery(offset);
+    	
     }
 	
     
@@ -130,24 +135,35 @@ public class MainActivity extends Activity {
 	}
 	
 	public void onSearch(View v){
+		// clear pagination count
+		startingPoint = 0;
+		
 		String inputQuery = etSearch.getText().toString(); 
 		if(inputQuery.equals("")){
 			Toast.makeText(getApplicationContext(), "Enter search query", Toast.LENGTH_SHORT).show();
 		}
 		else{
 			Toast.makeText(getApplicationContext(), "Searching for " + inputQuery + " ...", Toast.LENGTH_SHORT).show();
-			
-			String url = createURL();
-			
+			fireQuery(0);
+		}
+	}
+	
+	
+	private void fireQuery(final int param){
+		String url = createURL(param);
+		queryCount++;
+		
 			AsyncHttpClient client = new AsyncHttpClient();
-			// https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=barack%20obama
+			Log.d("DEBUG", "firing query " + queryCount);
 			client.get(url, new JsonHttpResponseHandler(){
 				public void onSuccess(JSONObject res){
 					JSONArray imageJsonResults = null;
 					
 					try{
 						imageJsonResults = res.getJSONObject("responseData").getJSONArray("results");
-						imageResult.clear();
+						if(param == 0){
+							imageResult.clear();
+						}
 						
 						imageAdapter.addAll(Result.fromJSONArray(imageJsonResults));
 						Log.d("url", imageResult.toString());
@@ -157,10 +173,11 @@ public class MainActivity extends Activity {
 					
 				}
 			});
-		}
+		
+		
 	}
 
-	private String createURL() {
+	private String createURL(int offset) {
 		String imageSize = null; 
 		String colorFilter = null;
 		String imageType = null;
@@ -177,7 +194,6 @@ public class MainActivity extends Activity {
 			Log.d("DEBUG", "Pref is null");
 		}
 		
-		// TODO: filter dotcom
 		if(siteSearch != null){
 			temp += "&as_sitesearch=" + siteSearch;
 		}
@@ -195,7 +211,7 @@ public class MainActivity extends Activity {
 		}
 		
 		String url = "https://ajax.googleapis.com/ajax/services/search/images?rsz=8" + "&start=" +
-				startingPoint + temp + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString());
+				(offset*8) + temp + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString());
 		return url;
 	}
 	
