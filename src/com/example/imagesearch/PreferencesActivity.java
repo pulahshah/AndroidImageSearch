@@ -69,7 +69,14 @@ public class PreferencesActivity extends Activity {
 			p.setImageSize(spImageSize.getSelectedItem().toString());
 			p.setColorFilter(spColorFilter.getSelectedItem().toString());
 			p.setImageType(spImageType.getSelectedItem().toString());
-			p.setSiteFilter(etSiteFilter.getText().toString());
+			
+			String tempSiteFilter = etSiteFilter.getText().toString();
+			if(tempSiteFilter.length() == 0){
+				p.setSiteFilter("");
+			}
+			else{
+				p.setSiteFilter(tempSiteFilter);	
+			}
 			
 			// create intent
 			Intent data = new Intent();

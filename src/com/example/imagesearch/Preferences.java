@@ -13,9 +13,9 @@ public class Preferences implements Serializable{
 	private String siteFilter;
 	
 	public Preferences(){
-		this.imageSize = "";
-		this.colorFilter = "";
-		this.imageType = "";
+		this.imageSize = "no selection";
+		this.colorFilter = "no selection";
+		this.imageType = "no selection";
 		this.siteFilter = "";
 	}
 	

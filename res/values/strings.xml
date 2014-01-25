@@ -18,6 +18,7 @@
     
     
     <string-array name="image_size_array">
+        <item>No Selection</item>
         <item>Small</item>
         <item>Medium</item>
         <item>Large</item>
@@ -25,6 +26,7 @@
     </string-array>	
     
     <string-array name="color_filter_array">
+        <item>No Selection</item>
         <item>Red</item>
         <item>Blue</item>
         <item>Yellow</item>
@@ -35,6 +37,7 @@
     </string-array>
     
     <string-array name="image_type_array">
+        <item>No Selection</item>
         <item>Face</item>
         <item>Photo</item>
         <item>ClipArt</item>

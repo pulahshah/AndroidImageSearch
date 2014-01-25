@@ -36,11 +36,6 @@ public class MainActivity extends Activity {
 	ImageArrayAdapter imageAdapter;
 	
 	private final int REQUEST_CODE = 1;
-	private boolean firstRun = true;
-	private int queryCount = 0;
-	
-	int startingPoint = 0;
-	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +88,7 @@ public class MainActivity extends Activity {
       // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
       // Deserialize API response and then construct new objects to append to the adapter
     	
-    	Log.d("DEBUG", "<custom load more data - offset: >" + offset + " ;; firstRun: " + firstRun);
+    	Log.d("DEBUG", "custom load more data - offset: " + offset);
     	
     	fireQuery(offset);
     	
@@ -127,6 +122,7 @@ public class MainActivity extends Activity {
 				Log.d("DEBUG", "Image size: " + pref.getImageSize().toString());
 				Log.d("DEBUG", "Color filter: " + pref.getColorFilter().toString());
 				Log.d("DEBUG", "Image type: " + pref.getImageType().toString());
+				Log.d("DEBUG", "Site filter: " + pref.getSiteFilter().toString());
 			}
 			else{
 				Log.d("DEBUG", "Pref is null <onActivityResult>");
@@ -134,10 +130,7 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-	public void onSearch(View v){
-		// clear pagination count
-		startingPoint = 0;
-		
+	public void onSearch(View v){		
 		String inputQuery = etSearch.getText().toString(); 
 		if(inputQuery.equals("")){
 			Toast.makeText(getApplicationContext(), "Enter search query", Toast.LENGTH_SHORT).show();
@@ -151,10 +144,8 @@ public class MainActivity extends Activity {
 	
 	private void fireQuery(final int param){
 		String url = createURL(param);
-		queryCount++;
 		
 			AsyncHttpClient client = new AsyncHttpClient();
-			Log.d("DEBUG", "firing query " + queryCount);
 			client.get(url, new JsonHttpResponseHandler(){
 				public void onSuccess(JSONObject res){
 					JSONArray imageJsonResults = null;
@@ -178,11 +169,11 @@ public class MainActivity extends Activity {
 	}
 
 	private String createURL(int offset) {
-		String imageSize = null; 
-		String colorFilter = null;
-		String imageType = null;
-		String siteSearch = null;
-		String temp = "";
+		String imageSize = "no selection"; 
+		String colorFilter = "no selection";
+		String imageType = "no selection";
+		String siteSearch = "no selection";
+		String tempURL = "";
 		
 		if(pref != null){
 			imageSize = pref.getImageSize();
@@ -194,24 +185,28 @@ public class MainActivity extends Activity {
 			Log.d("DEBUG", "Pref is null");
 		}
 		
-		if(siteSearch != null){
-			temp += "&as_sitesearch=" + siteSearch;
+		
+		if(!colorFilter.equalsIgnoreCase("no selection")){
+			tempURL += "&imgcolor=" + colorFilter;
 		}
 		
-		if(colorFilter != null){
-			temp += "&imgcolor=" + colorFilter;
+		if(!imageSize.equalsIgnoreCase("no selection")){
+			tempURL += "&imgsz=" + imageSize;
 		}
 		
-		if(imageSize != null){
-			temp += "&imgsz=" + imageSize;
+		if(!imageType.equalsIgnoreCase("no selection")){
+			tempURL += "&imgtype=" + imageType;
 		}
 		
-		if(imageType != null){
-			temp += "&imgtype=" + imageType;
+		if(!siteSearch.isEmpty()){
+			tempURL += "&as_sitesearch=" + siteSearch;
 		}
+		
+		Log.d("DEBUG", "Temp URL: " + tempURL);
 		
 		String url = "https://ajax.googleapis.com/ajax/services/search/images?rsz=8" + "&start=" +
-				(offset*8) + temp + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString());
+				(offset*8) + tempURL + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString());
+		
 		return url;
 	}
 	
