@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 public class PreferencesActivity extends Activity {
 
@@ -40,16 +41,20 @@ public class PreferencesActivity extends Activity {
 		ArrayAdapter<CharSequence> adapterImageSize = ArrayAdapter.createFromResource(this, R.array.image_size_array, android.R.layout.simple_spinner_item);
 		adapterImageSize.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spImageSize.setAdapter(adapterImageSize);
+		setSpinnerToValue(spImageSize, toTitleCase(p.getImageSize()));
 		
 		spColorFilter = (Spinner) findViewById(R.id.spColorFilter);
 		ArrayAdapter<CharSequence> adapterColorFilter = ArrayAdapter.createFromResource(this, R.array.color_filter_array, android.R.layout.simple_spinner_item);
 		adapterImageSize.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spColorFilter.setAdapter(adapterColorFilter);
+		setSpinnerToValue(spColorFilter, toTitleCase(p.getColorFilter()));
 		
 		spImageType = (Spinner) findViewById(R.id.spImageType);
 		ArrayAdapter<CharSequence> adapterImageType = ArrayAdapter.createFromResource(this, R.array.image_type_array, android.R.layout.simple_spinner_item);
 		adapterImageType.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spImageType.setAdapter(adapterImageType);
+		setSpinnerToValue(spImageType, toTitleCase(p.getImageType()));
+		
 		
 		etSiteFilter = (EditText) findViewById(R.id.etSiteFilter);
 		if(etSiteFilter != null){
@@ -61,6 +66,36 @@ public class PreferencesActivity extends Activity {
 				Log.d("DEBUG", "passed pref is null <PreferencesActivity>");
 			}
 		}
+	}
+	
+	
+	public static String toTitleCase(String input) {
+	    StringBuilder titleCase = new StringBuilder();
+	    boolean nextTitleCase = true;
+
+	    for (char c : input.toCharArray()) {
+	        if (Character.isSpaceChar(c)) {
+	            nextTitleCase = true;
+	        } else if (nextTitleCase) {
+	            c = Character.toTitleCase(c);
+	            nextTitleCase = false;
+	        }
+
+	        titleCase.append(c);
+	    }
+
+	    return titleCase.toString();
+	}
+	
+	public void setSpinnerToValue(Spinner spinner, String value) {
+	    int index = 0;
+	    SpinnerAdapter adapter = spinner.getAdapter();
+	    for (int i = 0; i < adapter.getCount(); i++) {
+	        if (adapter.getItem(i).equals(value)) {
+	            index = i;
+	        }
+	    }
+	    spinner.setSelection(index);
 	}
 	
 	
