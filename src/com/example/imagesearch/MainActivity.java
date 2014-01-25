@@ -30,12 +30,15 @@ public class MainActivity extends Activity {
 	Button btnSearch;
 	GridView gvImageResults;
 	
-	Preferences pref;
+	Preferences pref = new Preferences();
 	
 	ArrayList<Result> imageResult = new ArrayList<Result>();
 	ImageArrayAdapter imageAdapter;
 	
 	private final int REQUEST_CODE = 1;
+	
+	int startingPoint = 0;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +59,17 @@ public class MainActivity extends Activity {
 			}
 			
 		});
+		
+		
+		gvImageResults.setOnScrollListener(new EndlessScrollListener() {
+	        @Override
+	        public void onLoadMore(int page, int totalItemsCount) {
+	                // Triggered only when new data needs to be appended to the list
+	                // Add whatever code is needed to append new items to your AdapterView
+	            customLoadMoreDataFromApi(page); 
+	                // or customLoadMoreDataFromApi(totalItemsCount); 
+	        }
+	        });
 	}
 
 	@Override
@@ -71,6 +85,16 @@ public class MainActivity extends Activity {
 		gvImageResults = (GridView) findViewById(R.id.gvImageResults);
 	}
 	
+	// Append more data into the adapter
+    public void customLoadMoreDataFromApi(int offset) {
+      // This method probably sends out a network request and appends new data items to your adapter. 
+      // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
+      // Deserialize API response and then construct new objects to append to the adapter
+    	
+    	Log.d("DEBUG", "<custom load more data - offset: >" + offset);
+    }
+	
+    
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle presses on the action bar items
 	    switch (item.getItemId()) {
@@ -85,17 +109,23 @@ public class MainActivity extends Activity {
 	
 	
 	public void openSettings(){
-		pref = new Preferences();
 		Intent i = new Intent(MainActivity.this, PreferencesActivity.class);
-		i.putExtra("pref", pref); // pass arbitrary data to launched activity
+		i.putExtra("pref", pref); 
 		startActivityForResult(i, REQUEST_CODE);
 	}
 	
 	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data){
 		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-			pref = (Preferences) getIntent().getSerializableExtra("newPref");
-		    
+			pref = (Preferences) data.getSerializableExtra("newPref");
+			if(pref != null){
+				Log.d("DEBUG", "Image size: " + pref.getImageSize().toString());
+				Log.d("DEBUG", "Color filter: " + pref.getColorFilter().toString());
+				Log.d("DEBUG", "Image type: " + pref.getImageType().toString());
+			}
+			else{
+				Log.d("DEBUG", "Pref is null <onActivityResult>");
+			}
 		}
 	}
 	
@@ -106,15 +136,12 @@ public class MainActivity extends Activity {
 		}
 		else{
 			Toast.makeText(getApplicationContext(), "Searching for " + inputQuery + " ...", Toast.LENGTH_SHORT).show();
-			/* 
-			 * 1. get preferences
-			 * 2. create url
-			 * 3. fire query
-			 */
+			
+			String url = createURL();
+			
 			AsyncHttpClient client = new AsyncHttpClient();
 			// https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=barack%20obama
-			client.get("https://ajax.googleapis.com/ajax/services/search/images?rsz=8&" + "start=" + "0" + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString()), 
-					new JsonHttpResponseHandler(){
+			client.get(url, new JsonHttpResponseHandler(){
 				public void onSuccess(JSONObject res){
 					JSONArray imageJsonResults = null;
 					
@@ -131,6 +158,45 @@ public class MainActivity extends Activity {
 				}
 			});
 		}
+	}
+
+	private String createURL() {
+		String imageSize = null; 
+		String colorFilter = null;
+		String imageType = null;
+		String siteSearch = null;
+		String temp = "";
+		
+		if(pref != null){
+			imageSize = pref.getImageSize();
+			colorFilter = pref.getColorFilter();
+			imageType = pref.getImageType();
+			siteSearch = pref.getSiteFilter();
+		}
+		else{
+			Log.d("DEBUG", "Pref is null");
+		}
+		
+		// TODO: filter dotcom
+		if(siteSearch != null){
+			temp += "&as_sitesearch=" + siteSearch;
+		}
+		
+		if(colorFilter != null){
+			temp += "&imgcolor=" + colorFilter;
+		}
+		
+		if(imageSize != null){
+			temp += "&imgsz=" + imageSize;
+		}
+		
+		if(imageType != null){
+			temp += "&imgtype=" + imageType;
+		}
+		
+		String url = "https://ajax.googleapis.com/ajax/services/search/images?rsz=8" + "&start=" +
+				startingPoint + temp + "&v=1.0&q=" + Uri.encode(etSearch.getText().toString());
+		return url;
 	}
 	
 }

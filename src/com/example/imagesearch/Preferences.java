@@ -13,10 +13,10 @@ public class Preferences implements Serializable{
 	private String siteFilter;
 	
 	public Preferences(){
-		this.imageSize = "small";
+		this.imageSize = "";
 		this.colorFilter = "";
 		this.imageType = "";
-		this.siteFilter = "google.com";
+		this.siteFilter = "";
 	}
 	
 	public String getSiteFilter() {
@@ -26,19 +26,19 @@ public class Preferences implements Serializable{
 		this.siteFilter = siteFilter;
 	}
 	public String getImageSize() {
-		return imageSize;
+		return imageSize.toLowerCase();
 	}
 	public void setImageSize(String imageSize) {
 		this.imageSize = imageSize;
 	}
 	public String getColorFilter() {
-		return colorFilter;
+		return colorFilter.toLowerCase();
 	}
 	public void setColorFilter(String colorFilter) {
 		this.colorFilter = colorFilter;
 	}
 	public String getImageType() {
-		return imageType;
+		return imageType.toLowerCase();
 	}
 	public void setImageType(String imageType) {
 		this.imageType = imageType;
